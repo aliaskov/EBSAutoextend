@@ -1,0 +1,42 @@
+#!/bin/bash
+INSTANCE_ID=`curl -s http://169.254.169.254/latest/meta-data/instance-id`
+VOLUME_ID=vol-054914c6b50b19a9c
+
+
+#Check devices and mapping
+#aws ec2 describe-volumes --region eu-west-1 --filters Name=attachment.instance-id,Values=$INSTANCE_ID --query 'Volumes[*].Attachments[*].{VolumeId:VolumeId,DeviceMapping:Device}' --output text
+
+#Type ID and mount
+#aws ec2 describe-volumes --region eu-west-1 --filters Name=attachment.instance-id,Values=i-01038c9bddee62cf8 --query 'Volumes[*].{Type:VolumeType,ID:VolumeId,Mounted_as:Attachments[*].Device}' --output text
+
+
+VOL_STATE=`aws ec2 describe-volumes --volume-ids $VOLUME_ID --region eu-west-1 --query 'Volumes[0].State' --output text`
+if [ $VOL_STATE = in-use ]; then
+    aws ec2 detach-volume --force --volume-id $VOLUME_ID --region eu-west-1
+fi
+
+
+df  | grep /dev/xvdf |  awk '{print $5}' | tr -d '%'
+
+df  | grep /dev/xvdf | tr -s ' ' | cut -d ' ' -f 5 | grep -o "[0-9]*"
+
+
+#!/bin/bash
+
+export AWS_CLOUDWATCH_HOME=/home/ec2-user/CloudWatch-1.0.12.1
+export AWS_CREDENTIAL_FILE=$AWS_CLOUDWATCH_HOME/credentials
+export AWS_CLOUDWATCH_URL=https://monitoring.amazonaws.com
+export PATH=$AWS_CLOUDWATCH_HOME/bin:$PATH
+export JAVA_HOME=/usr/lib/jvm/jre
+
+path='/'
+
+if [ -n "$1" ]; then
+  path=$1
+fi
+
+# get ec2 instance id
+instanceid=`wget -q -O - http://169.254.169.254/latest/meta-data/instance-id`
+
+freespace=`df --local --block-size=1M $path | grep $path | tr -s ' ' | cut -d ' ' -f 4`
+usedpercent=`df --local $path | grep $path | tr -s ' ' | cut -d ' ' -f 5 | grep -o "[0-9]*"`
