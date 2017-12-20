@@ -40,3 +40,12 @@ instanceid=`wget -q -O - http://169.254.169.254/latest/meta-data/instance-id`
 
 freespace=`df --local --block-size=1M $path | grep $path | tr -s ' ' | cut -d ' ' -f 4`
 usedpercent=`df --local $path | grep $path | tr -s ' ' | cut -d ' ' -f 5 | grep -o "[0-9]*"`
+
+
+# Create time tag on volume to have some history
+                ec.create_tags(
+                  Resources=[vol_id],
+                  Tags=[
+                    {'Key': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'Value': 'Volume was extended' }
+                  ]
+                )
