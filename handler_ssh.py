@@ -9,13 +9,13 @@ def worker_handler(event, context):
     s3_client = boto3.client('s3')
     # ec = boto3.client('ec2')
     #Download private key file from secure S3 bucket
-    s3_client.download_file('ggs-///////','key.pem','/tmp/key.pem')
+    s3_client.download_file('ggs-gitlab-conf','delta-gg.pem','/tmp/delta.pem')
 
-    k = paramiko.RSAKey.from_private_key_file("/tmp/key.pem")
+    k = paramiko.RSAKey.from_private_key_file("/tmp/delta.pem")
     c = paramiko.SSHClient()
     c.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
-    host= '10.200.71.28'
+    host='10.200.71.28'
     print "Connecting to " + host
     c.connect( hostname = host, username = "ec2-user", pkey = k )
     print "Connected to " + host
